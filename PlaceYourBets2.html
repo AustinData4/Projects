@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Place Your Bets</title>
+  <style>
+    /* Ticker styles */
+.ticker-label-wrapper {
+  text-align: left;
+  padding: 6px 0 2px 0;
+}
+
+.ticker-label-green {
+  background: #22c55e; /* green background */
+  color: #053b10;      /* dark green text like classic bookie slips */
+  padding: 6px 12px;
+  display: inline-block;
+  border-radius: 0 0 6px 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.ticker-frame {
+  background: #111;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 2px solid #22c55e;  /* green border to match */
+  border-bottom: 2px solid #22c55e;
+  padding: 4px 0;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.ticker {
+  display: inline-block;
+  padding: 4px 0;
+}
+
+.ticker-content {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 30s linear infinite;
+  font-size: 0.9rem;
+  color: #f1f5f9;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #111; /* match around Place Your Bets header */
+      color: #333;
+    }
+
+    header {
+      background: #111;
+      color: #fff;
+      padding: 16px 20px;
+      text-align: center;
+      border-bottom: 2px solid #444;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+
+    .container {
+      margin: 20px auto;
+      background: #111; /* same dark background around green label area */
+      padding: 10px 10px 20px;
+      border-radius: 10px;
+    }
+
+    .inner-card {
+      background: #fff;
+      margin-top: 10px;
+      padding: 16px 20px 24px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-gap: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .button-row {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      padding: 8px 14px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      font-family: inherit;
+    }
+
+    button.primary {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    .actions {
+      white-space: nowrap;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      color: #555;
+    }
+
+    .helper-text {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Place Your Bets</h2>
+  </header>
+
+  <!-- NFL TICKER SECTION -->
+  <div class="page-wrapper">
+    <div class="container">
+      <div class="ticker-label-wrapper">
+        <span class="ticker-label-green">AustinData4 Weekly NFL Predictor</span>
+      </div>
+
+      <div class="ticker-frame">
+        <div class="ticker">
+          <span id="tickerContent" class="ticker-content">
+            Loading odds...
+          </span>
+        </div>
+      </div>
+
+      <div class="inner-card">
+        <!-- Main app content -->
+        <h3>Track Bets &amp; Game Scores</h3>
+
+        <form id="gameForm">
+          <div class="field">
+            <label for="player1">Player / Friend 1</label>
+            <input type="text" id="player1" placeholder="e.g., Austin" />
+          </div>
+
+          <div class="field">
+            <label for="player2">Player / Friend 2 (or House)</label>
+            <input type="text" id="player2" placeholder="e.g., Ben or House" />
+          </div>
+
+          <div class="field">
+            <label for="gameType">Game Type</label>
+            <select id="gameType">
+              <option value="">Select a game</option>
+              <option value="Ping Pong">Ping Pong</option>
+              <option value="Pool">Pool</option>
+              <option value="Football Bet">Football Bet</option>
+              <option value="Hockey Bet">Hockey Bet</option>
+              <option value="Tennis">Tennis</option>
+              <option value="Pickleball">Pickleball</option>
+              <option value="Golf">Golf</option>
+              <option value="Miscellaneous Bet">Miscellaneous Bet</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="date">Date</label>
+            <input type="date" id="date" />
+          </div>
+
+          <div class="field full-width">
+            <label for="stakes">Stakes / Bet Info</label>
+            <input
+              type="text"
+              id="stakes"
+              placeholder="$20, loser buys drinks, etc."
+            />
+            <div class="helper-text">
+              For best results in the progress tab, include a number (e.g., 20) somewhere in the stakes.
+            </div>
+          </div>
+
+          <div class="field full-width">
+            <label for="score">Score / Result</label>
+            <input
+              type="text"
+              id="score"
+              placeholder="e.g., 21–18, Austin won"
+            />
+          </div>
+
+          <div class="field full-width">
+            <label for="notes">Notes</label>
+            <textarea
+              id="notes"
+              placeholder="Extra details or inside jokes"
+            ></textarea>
+          </div>
+
+          <div class="button-row">
+            <button type="submit" class="primary" id="submitBtn">
+              Add Game
+            </button>
+            <button type="button" class="secondary" id="cancelEditBtn" style="display:none;">
+              Cancel Edit
+            </button>
+          </div>
+        </form>
+
+        <h3>Past Games &amp; Bets</h3>
+        <table id="gamesTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Game Type</th>
+              <th>Player 1</th>
+              <th>Player 2</th>
+              <th>Stakes</th>
+              <th>Score / Result</th>
+              <th>Notes</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="gamesBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+
+        <div class="status-bar">
+          <span id="gamesCount">0 games tracked</span>
+          <span id="editStatus"></span>
+        </div>
+
+        <h3>Progress Summary</h3>
+        <p class="helper-text">
+          This table only includes bets that have been resolved. Use the Resolve button in the Past Games table to finalize a bet.
+        </p>
+        <table id="progressTable">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Wins</th>
+              <th>Losses</th>
+              <th>Net Money ($)</th>
+            </tr>
+          </thead>
+          <tbody id="progressBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+        <p id="progressEmpty" class="helper-text">No resolved bets yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------------
+    // Simple "database" in localStorage
+    // -----------------------------
+    const STORAGE_KEY = "betskiGamesV1";
+    let games = [];
+    let currentEditIndex = null;
+
+    function loadGames() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      games = data ? JSON.parse(data) : [];
+      renderGames();
+    }
+
+    function saveGames() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    }
+
+    // -----------------------------
+    // NFL ticker: pulls from AustinData4 backend if available
+    // -----------------------------
+    async function initTicker() {
+      const tickerContent = document.getElementById("tickerContent");
+      if (!tickerContent) return;
+
+      // Try to pull odds from your AustinData4 Weekly NFL Predictor backend.
+      // You will need to expose your predictor as an HTTP endpoint that returns JSON.
+      // Example expected JSON:
+      //   { "odds": ["BUF @ KC: KC -3.5 | O/U 48.5", "..."] }
+      try {
+        const response = await fetch("/api/austindata4/weekly-odds");
+        if (response.ok) {
+          const data = await response.json();
+          if (data && Array.isArray(data.odds) && data.odds.length > 0) {
+            tickerContent.textContent = data.odds.join("   •   ");
+            return; // success – we used live odds
+          }
+        }
+      } catch (err) {
+        console.error(
+          "Could not load odds from AustinData4 backend, using fallback data instead.",
+          err
+        );
+      }
+
+      // Fallback: hard-coded example odds so the ticker still works
+      const fallbackOdds = [
+        "BUF @ KC: KC -3.5 | O/U 48.5",
+        "DAL @ PHI: PHI -2.5 | O/U 47.0",
+        "SF @ SEA: SF -6.0 | O/U 44.5",
+        "NYJ @ MIA: MIA -7.5 | O/U 41.0",
+        "GB @ CHI: GB -1.5 | O/U 42.0"
+      ];
+
+      tickerContent.textContent = fallbackOdds.join("   •   ");
+    }
+
+    // Optional: periodically refresh odds in case your backend updates them
+    function scheduleWeeklyOddsRefresh() {
+      // This simply re-calls initTicker every hour.
+      // On the SERVER side, schedule AustinData4 to update its odds
+      // at 12:00am Monday Central time. When the browser reloads or the
+      // hourly refresh runs after that, the new odds will be pulled.
+      setInterval(initTicker, 60 * 60 * 1000);
+    }
+
+    // -----------------------------
+    // Rendering games table
+    // -----------------------------
+    function renderGames() {
+      const tbody = document.getElementById("gamesBody");
+      tbody.innerHTML = "";
+
+      games.forEach((game, index) => {
+        const tr = document.createElement("tr");
+        const status = game.status || "In Progress";
+        const resolveLabel = status === "Resolved" ? "Resolved" : "Resolve";
+        const resolveDisabled = status === "Resolved" ? "disabled" : "";
+
+        tr.innerHTML = `
+          <td>${game.date || ""}</td>
+          <td>${game.gameType}</td>
+          <td>${game.player1}</td>
+          <td>${game.player2}</td>
+          <td>${game.stakes || ""}</td>
+          <td>${game.score || ""}</td>
+          <td>${game.notes || ""}</td>
+          <td>${status}</td>
+          <td class="actions">
+            <button class="secondary" onclick="onResolveGame(${index})" ${resolveDisabled}>${resolveLabel}</button>
+            <button class="secondary" onclick="onEditGame(${index})">Edit</button>
+            <button class="danger" onclick="onDeleteGame(${index})">Delete</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("gamesCount").textContent =
+        games.length === 1 ? "1 game tracked" : games.length + " games tracked";
+
+      updateProgress();
+    }
+
+    // -----------------------------
+    // Password check
+    // -----------------------------
+    const PASSWORD = "Betski";
+
+    function checkPassword() {
+      const input = prompt("Enter password to continue:");
+      if (input === null) return false; // cancel
+      if (input === PASSWORD) return true;
+      alert("Incorrect password.");
+      return false;
+    }
+
+    // -----------------------------
+    // Resolve bets & progress summary
+    // -----------------------------
+    function parseAmountFromStakes(stakes) {
+      if (!stakes) return 0;
+      const match = String(stakes).match(/([0-9]+(?:\.[0-9]+)?)/);
+      return match ? parseFloat(match[1]) : 0;
+    }
+
+    function onResolveGame(index) {
+      if (!checkPassword()) return;
+
+      const game = games[index];
+
+      if (game.status === "Resolved") {
+        alert("This bet is already resolved.");
+        return;
+      }
+
+      const winnerInput = prompt(
+        `Who won this bet?\n1 = ${game.player1}\n2 = ${game.player2}`
+      );
+
+      if (winnerInput !== "1" && winnerInput !== "2") {
+        alert("Resolution cancelled.");
+        return;
+      }
+
+      const defaultAmount = parseAmountFromStakes(game.stakes);
+      const amountInput = prompt(
+        "How much money changed hands for this bet? (numbers only, e.g., 20)",
+        defaultAmount ? defaultAmount.toString() : ""
+      );
+
+      let amount = parseFloat(amountInput);
+      if (isNaN(amount)) amount = 0;
+
+      const winnerKey = winnerInput === "1" ? "player1" : "player2";
+
+      game.status = "Resolved";
+      game.winner = winnerKey;
+      game.amount = amount;
+
+      games[index] = game;
+      saveGames();
+      renderGames();
+    }
+
+    function updateProgress() {
+      const tbody = document.getElementById("progressBody");
+      const emptyMsg = document.getElementById("progressEmpty");
+      if (!tbody) return;
+
+      const stats = {};
+
+      games.forEach((game) => {
+        if (game.status !== "Resolved" || !game.winner) return;
+
+        const amount = Number(game.amount) || 0;
+        const p1 = game.player1;
+        const p2 = game.player2;
+
+        if (!stats[p1]) stats[p1] = { wins: 0, losses: 0, net: 0 };
+        if (!stats[p2]) stats[p2] = { wins: 0, losses: 0, net: 0 };
+
+        const winnerName = game[game.winner];
+        const loserName = winnerName === p1 ? p2 : p1;
+
+        if (!winnerName || !loserName) return;
+
+        stats[winnerName].wins += 1;
+        stats[winnerName].net += amount;
+
+        stats[loserName].losses += 1;
+        stats[loserName].net -= amount;
+      });
+
+      tbody.innerHTML = "";
+
+      const names = Object.keys(stats).sort();
+      names.forEach((name) => {
+        const s = stats[name];
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${name}</td>
+          <td>${s.wins}</td>
+          <td>${s.losses}</td>
+          <td>${s.net.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (emptyMsg) {
+        emptyMsg.style.display = names.length ? "none" : "block";
+      }
+    }
+
+    // -----------------------------
+    // Edit / Delete handlers
+    // -----------------------------
+    function onEditGame(index) {
+      if (!checkPassword()) return;
+
+      const game = games[index];
+      currentEditIndex = index;
+
+      document.getElementById("player1").value = game.player1;
+      document.getElementById("player2").value = game.player2;
+      document.getElementById("gameType").value = game.gameType;
+      document.getElementById("date").value = game.date || "";
+      document.getElementById("stakes").value = game.stakes || "";
+      document.getElementById("score").value = game.score || "";
+      document.getElementById("notes").value = game.notes || "";
+
+      document.getElementById("submitBtn").textContent = "Update Game";
+      document.getElementById("cancelEditBtn").style.display = "inline-block";
+      document.getElementById("editStatus").textContent =
+        "Editing game " + (index + 1);
+    }
+
+    function onDeleteGame(index) {
+      if (!checkPassword()) return;
+
+      const ok = confirm("Delete this game/bet permanently?");
+      if (!ok) return;
+
+      games.splice(index, 1);
+      saveGames();
+      renderGames();
+    }
+
+    // -----------------------------
+    // Form submit / add or update
+    // -----------------------------
+    document.getElementById("gameForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const player1 = document.getElementById("player1").value.trim();
+      const player2 = document.getElementById("player2").value.trim();
+      const gameType = document.getElementById("gameType").value;
+      const date = document.getElementById("date").value;
+      const stakes = document.getElementById("stakes").value.trim();
+      const score = document.getElementById("score").value.trim();
+      const notes = document.getElementById("notes").value.trim();
+
+      if (!player1 || !player2 || !gameType) {
+        alert("Player 1, Player 2, and Game Type are required.");
+        return;
+      }
+
+      const existing = currentEditIndex !== null ? games[currentEditIndex] : {};
+      const gameData = {
+        player1,
+        player2,
+        gameType,
+        date,
+        stakes,
+        score,
+        notes,
+        status: existing.status || "In Progress",
+        winner: existing.winner || null,
+        amount: existing.amount != null ? existing.amount : null
+      };
+
+      if (currentEditIndex === null) {
+        // Add new
+        games.push(gameData);
+      } else {
+        // Update existing
+        games[currentEditIndex] = gameData;
+      }
+
+      saveGames();
+      renderGames();
+      resetForm();
+    });
+
+    function resetForm() {
+      document.getElementById("gameForm").reset();
+      currentEditIndex = null;
+
+      document.getElementById("submitBtn").textContent = "Add Game";
+      document.getElementById("cancelEditBtn").style.display = "none";
+      document.getElementById("editStatus").textContent = "";
+    }
+
+    document.getElementById("cancelEditBtn").addEventListener("click", resetForm);
+
+    // -----------------------------
+    // Initialize
+    // -----------------------------
+    window.onload = function () {
+      loadGames();
+      initTicker();
+      scheduleWeeklyOddsRefresh();
+    };
+  </script>
+</body>
+</html>

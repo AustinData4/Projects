@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Squad Tracker – Bets & Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    /* ---------------------------------------------
+       BASE STYLES (same as your full app)
+    --------------------------------------------- */
+    * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #0f172a; color: #e5e7eb; padding: 16px; }
+    h1 { font-size: 1.8rem; margin-bottom: 12px; }
+    .app-container { max-width: 1000px; margin: 0 auto; }
+
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border: 1px solid #1f2937;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #1f2937;
+      color: #9ca3af;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+
+    input, select, button, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+      background: #3b82f6;
+      padding: 8px 12px;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1 1 180px;
+      min-width: 0;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #111827;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill .delete {
+      cursor: pointer;
+      color: #f97373;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    th {
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+    }
+
+    .badge-open { background: #1d4ed8; color: #dbeafe; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .stat-card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 8px;
+      border: 1px solid #1f2937;
+    }
+
+    .small-text { font-size: 0.75rem; color: #9ca3af; }
+
+    /* ---------------------------------------------
+       NEW NFL TICKER STYLES
+    --------------------------------------------- */
+    .ticker-wrapper {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 6px 0;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      border-radius: 10px;
+    }
+
+    .ticker-title {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #0f172a;
+      padding: 2px 6px;
+      color: #38bdf8;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      z-index: 2;
+    }
+
+    .ticker-track {
+      display: inline-block;
+      padding-left: 150px;
+      animation: scrollTicker 32s linear infinite;
+      font-size: 0.9rem;
+      color: #f1f5f9;
+    }
+
+    .ticker-item {
+      margin-right: 40px;
+    }
+
+    .ticker-team { font-weight: 600; color: #e2e8f0; }
+    .ticker-odds { margin-left: 6px; color: #facc15; }
+
+    @keyframes scrollTicker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <h1>Squad Tracker</h1>
+    <p class="small-text">
+      Track pool, ping pong, bets, stats, and now NFL odds — all saved locally.
+    </p>
+
+    <!-- ---------------------------------------------
+         NFL TICKER (NEW)
+    --------------------------------------------- -->
+    <div class="ticker-wrapper">
+      <div class="ticker-title">AustinData4 NFL Odds</div>
+      <div id="nflTicker" class="ticker-track"></div>
+    </div>
+
+    <!-- (Everything below here is your original full app) -->
+
+
+    <!-- =====================================================
+         FRIENDS
+    ===================================================== -->
+    <div class="card">
+      <div class="card-header"><h2>Friends</h2><span class="tag">Players</span></div>
+
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label>Add new friend</label>
+          <input id="playerName" type="text" placeholder="e.g. Austin" />
+        </div>
+        <div class="col" style="align-self: flex-end;">
+          <button id="addPlayerBtn">Add Friend</button>
+        </div>
+      </div>
+
+      <div id="playerList" class="pill-list"></div>
+    </div>
+
+    <!-- =====================================================
+         GAMES
+    ===================================================== -->
+    <div class="card">
+      <div class="card-header"><h2>Games</h2><span class="tag">Sports & Bets</span></div>
+
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label>Game Type</label>
+          <select id="gameType">
+            <option value="pool">Pool</option>
+            <option value="pingpong">Ping Pong</option>
+            <option value="football">Football Bet</option>
+            <option value="hockey">Hockey Bet</option>
+            <option value="tennis">Tennis</option>
+            <option value="pickleball">Pickleball</option>
+            <option value="golf">Golf</option>
+            <option value="misc">Miscellaneous Bet</option>
+          </select>
+        </div>
+
+        <div class="col">
+          <label>Player 1</label>
+          <select id="player1Select"></select>
+        </div>
+
+        <div class="col">
+          <label>Player 2</label>
+          <select id="player2Select"></select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label>P1 Score</label>
+          <input id="score1" type="number" value="0" />
+        </div>
+
+        <div class="col">
+          <label>P2 Score</label>
+          <input id="score2" type="number" value="0" />
+        </div>
+
+        <div class="col">
+          <label>Linked Bet</label>
+          <select id="linkedBetSelect"><option value="">No Bet</option></select>
+        </div>
+      </div>
+
+      <label>Notes</label>
+      <textarea id="gameNotes"></textarea>
+
+      <button id="addGameBtn">Log Game</button>
+
+      <table id="gamesTable">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Type</th>
+            <th>Players</th>
+            <th>Winner</th>
+            <th>Bet</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+
+    <!-- =====================================================
+         BETS
+    ===================================================== -->
+    <div class="card">
+      <div class="card-header"><h2>Bets</h2><span class="tag">Side Action</span></div>
+
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label>Description</label>
+          <input id="betDesc" type="text" placeholder="e.g. Loser buys Qdoba" />
+        </div>
+
+        <div class="col">
+          <label>Stake</label>
+          <input id="betStake" type="text" placeholder="$10, Drinks, etc." />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Bettor</label>
+          <select id="bettorSelect"></select>
+        </div>
+
+        <div class="col">
+          <label>Against</label>
+          <select id="betAgainstSelect"></select>
+        </div>
+
+        <div class="col">
+          <label>Status</label>
+          <select id="betStatus">
+            <option value="open">Open</option>
+            <option value="settled">Settled</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="addBetBtn">Add Bet</button>
+
+      <table id="betsTable">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Description</th>
+            <th>Players</th>
+            <th>Stake</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+    ===================================================== -->
+    <div class="card">
+      <div class="card-header"><h2>Stats</h2><span class="tag">Win/Loss</span></div>
+      <div id="statsContainer" class="stat-grid"></div>
+    </div>
+
+  </div> <!-- end app container -->
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ===================================================== -->
+  <script>
+    const STORAGE_KEY = "squadTracker_v1";
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : { players: [], games: [], bets: [] };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    let state = loadState();
+
+    function createId() { return Date.now().toString(36) + Math.random().toString(16).slice(2); }
+    function formatDate(ts) { return new Date(ts).toLocaleString(); }
+
+    function formatGameType(type) {
+      return {
+        pool: "Pool",
+        pingpong: "Ping Pong",
+        football: "Football Bet",
+        hockey: "Hockey Bet",
+        tennis: "Tennis",
+        pickleball: "Pickleball",
+        golf: "Golf",
+        misc: "Miscellaneous Bet"
+      }[type] || type;
+    }
+
+    function getPlayer(id) {
+      return state.players.find(p => p.id === id);
+    }
+
+    /* ---------------------------------------------
+       RENDER FRIENDS
+    --------------------------------------------- */
+    function renderPlayers() {
+      const playerList = document.getElementById("playerList");
+      const p1 = document.getElementById("player1Select");
+      const p2 = document.getElementById("player2Select");
+      const bettor = document.getElementById("bettorSelect");
+      const against = document.getElementById("betAgainstSelect");
+
+      playerList.innerHTML = "";
+      [p1, p2, bettor, against].forEach(sel => sel.innerHTML = "");
+
+      state.players.forEach(p => {
+        let pill = document.createElement("div");
+        pill.className = "pill";
+        pill.innerHTML = `${p.name} <span class="delete">×</span>`;
+        pill.querySelector(".delete").onclick = () => {
+          state.players = state.players.filter(x => x.id !== p.id);
+          saveState();
+          fullRender();
+        };
+        playerList.appendChild(pill);
+
+        // dropdowns
+        [p1, p2, bettor, against].forEach(sel => {
+          let opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    /* ---------------------------------------------
+       RENDER BETS
+    --------------------------------------------- */
+    function renderBets() {
+      const tbody = document.querySelector("#betsTable tbody");
+      const betSelect = document.getElementById("linkedBetSelect");
+      tbody.innerHTML = "";
+      betSelect.innerHTML = `<option value="">No Bet</option>`;
+
+      state.bets.forEach(b => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${formatDate(b.createdAt)}</td>
+          <td>${b.desc}</td>
+          <td>${getPlayer(b.bettorId)?.name} vs ${getPlayer(b.againstId)?.name}</td>
+          <td>${b.stake || "-"}</td>
+          <td><span class="badge badge-open">${b.status}</span></td>
+        `;
+
+        tbody.appendChild(tr);
+
+        if (b.status === "open") {
+          let opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.desc;
+          betSelect.appendChild(opt);
+        }
+      });
+    }
+
+    /* ---------------------------------------------
+       RENDER GAMES
+    --------------------------------------------- */
+    function renderGames() {
+      const tbody = document.querySelector("#gamesTable tbody");
+      tbody.innerHTML = "";
+
+      state.games.forEach(g => {
+        const p1 = getPlayer(g.player1Id);
+        const p2 = getPlayer(g.player2Id);
+        let winner = g.winnerId ? getPlayer(g.winnerId)?.name : "Tie";
+        let linkedBet = g.linkedBetId
+          ? state.bets.find(b => b.id === g.linkedBetId)?.desc
+          : "—";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDate(g.playedAt)}</td>
+          <td>${formatGameType(g.type)}</td>
+          <td>${p1?.name} (${g.score1}) vs ${p2?.name} (${g.score2})</td>
+          <td>${winner}</td>
+          <td>${linkedBet}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ---------------------------------------------
+       RENDER STATS
+    --------------------------------------------- */
+    function renderStats() {
+      const container = document.getElementById("statsContainer");
+      container.innerHTML = "";
+
+      state.players.forEach(p => {
+        let wins = 0, losses = 0;
+        state.games.forEach(g => {
+          if (g.winnerId === p.id) wins++;
+          else if (g.player1Id === p.id || g.player2Id === p.id) losses++;
+        });
+
+        let card = document.createElement("div");
+        card.className = "stat-card";
+        card.innerHTML = `
+          <div style="font-weight:600">${p.name}</div>
+          <div>Wins: ${wins}</div>
+          <div>Losses: ${losses}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ---------------------------------------------
+       FULL RENDER
+    --------------------------------------------- */
+    function fullRender() {
+      renderPlayers();
+      renderBets();
+      renderGames();
+      renderStats();
+    }
+
+    /* ---------------------------------------------
+       BUTTON HANDLERS
+    --------------------------------------------- */
+    document.getElementById("addPlayerBtn").onclick = () => {
+      let name = document.getElementById("playerName").value.trim();
+      if (!name) return;
+      state.players.push({ id: createId(), name });
+      saveState();
+      fullRender();
+    };
+
+    document.getElementById("addGameBtn").onclick = () => {
+      let p1 = player1Select.value;
+      let p2 = player2Select.value;
+      if (!p1 || !p2 || p1 === p2) {
+        alert("Choose two different players.");
+        return;
+      }
+
+      let s1 = parseInt(score1.value);
+      let s2 = parseInt(score2.value);
+
+      let winner = null;
+      if (s1 > s2) winner = p1;
+      if (s2 > s1) winner = p2;
+
+      state.games.push({
+        id: createId(),
+        type: gameType.value,
+        player1Id: p1,
+        player2Id: p2,
+        score1: s1,
+        score2: s2,
+        winnerId: winner,
+        linkedBetId: linkedBetSelect.value || null,
+        notes: gameNotes.value,
+        playedAt: Date.now()
+      });
+
+      saveState();
+      fullRender();
+    };
+
+    document.getElementById("addBetBtn").onclick = () => {
+      let desc = betDesc.value.trim();
+      let stake = betStake.value.trim();
+      let bettor = bettorSelect.value;
+      let against = betAgainstSelect.value;
+
+      if (!desc) {
+        alert("Enter a bet description.");
+        return;
+      }
+
+      if (!bettor || !against || bettor === against) {
+        alert("Choose valid bettors.");
+        return;
+      }
+
+      state.bets.push({
+        id: createId(),
+        desc,
+        stake,
+        bettorId: bettor,
+        againstId: against,
+        status: betStatus.value,
+        createdAt: Date.now()
+      });
+
+      saveState();
+      fullRender();
+    };
+
+    /* ---------------------------------------------
+       NFL TICKER LOGIC
+    --------------------------------------------- */
+    const weeklyOdds = [
+      { match: "CHI Bears @ GB Packers", odds: "GB -3.5 | O/U 44.5" },
+      { match: "KC Chiefs @ BUF Bills", odds: "KC -2 | O/U 47.0" },
+      { match: "DAL Cowboys @ PHI Eagles", odds: "PHI -1.5 | O/U 48.5" },
+      { match: "SF 49ers @ SEA Seahawks", odds: "SF -4 | O/U 42.0" },
+      { match: "NY Giants @ NE Patriots", odds: "NE -1 | O/U 40.5" }
+    ];
+
+    function renderTicker() {
+      const ticker = document.getElementById("nflTicker");
+      ticker.innerHTML = "";
+
+      // Scroll pass 1
+      weeklyOdds.forEach(g => {
+        let span = document.createElement("span");
+        span.className = "ticker-item";
+        span.innerHTML =
+          `<span class="ticker-team">${g.match}</span>
+           <span class="ticker-odds">${g.odds}</span>`;
+        ticker.appendChild(span);
+      });
+
+      // Clone for seamless loop
+      weeklyOdds.forEach(g => {
+        let span = document.createElement("span");
+        span.className = "ticker-item";
+        span.innerHTML =
+          `<span class="ticker-team">${g.match}</span>
+           <span class="ticker-odds">${g.odds}</span>`;
+        ticker.appendChild(span);
+      });
+    }
+
+    renderTicker();
+    fullRender();
+  </script>
+
+</body>
+</html>

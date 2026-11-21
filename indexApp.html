@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Squad Tracker – Bets & Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 16px;
+    }
+    h1, h2, h3 {
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+    .app-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border: 1px solid #1f2937;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #1f2937;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #3b82f6;
+      border-color: transparent;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+      background: #3b82f6;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s;
+      width: auto;
+    }
+    button:hover {
+      background: #2563eb;
+      box-shadow: 0 10px 20px rgba(37,99,235,0.35);
+      transform: translateY(-1px);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    .btn-secondary {
+      background: #111827;
+    }
+    .btn-secondary:hover {
+      background: #1f2937;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .col {
+      flex: 1 1 180px;
+      min-width: 0;
+    }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #111827;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill span {
+      opacity: 0.8;
+    }
+    .pill small {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .pill .delete {
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #f97373;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid #1f2937;
+      vertical-align: top;
+    }
+    th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+    }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .badge-pool {
+      background: #0f766e;
+      color: #ccfbf1;
+    }
+    .badge-tt {
+      background: #7c2d12;
+      color: #ffedd5;
+    }
+    .badge-open {
+      background: #1d4ed8;
+      color: #dbeafe;
+    }
+    .badge-settled {
+      background: #166534;
+      color: #bbf7d0;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 8px;
+      border: 1px solid #1f2937;
+    }
+    .stat-name {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .stat-line {
+      font-size: 0.8rem;
+    }
+    .small-text {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    @media (max-width: 640px) {
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <h1>Squad Tracker</h1>
+    <p class="small-text">
+      Track <strong>bets</strong>, <strong>pool</strong> games, and <strong>ping pong</strong> matches with your friends.
+      Data is saved locally in your browser.
+    </p>
+
+    <!-- Friends / Players -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Friends</h2>
+        <span class="tag">Players</span>
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="playerName">Add new friend</label>
+          <input id="playerName" type="text" placeholder="e.g., Austin" />
+        </div>
+        <div class="col" style="align-self: flex-end;">
+          <button id="addPlayerBtn">Add Friend</button>
+        </div>
+      </div>
+      <div class="pill-list" id="playerList"></div>
+      <p class="small-text" style="margin-top:8px;">
+        Tip: Add your friend group here first, then you can pick them from dropdowns when logging games and bets.
+      </p>
+    </div>
+
+    <!-- Games (Pool & Ping Pong) -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Games</h2>
+        <span class="tag">Pool &amp; Ping Pong</span>
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="gameType">Game type</label>
+          <select id="gameType">
+            <option value="pool">Pool</option>
+            <option value="pingpong">Ping Pong</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="player1Select">Player 1</label>
+          <select id="player1Select"></select>
+        </div>
+        <div class="col">
+          <label for="player2Select">Player 2</label>
+          <select id="player2Select"></select>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="score1">Player 1 score</label>
+          <input id="score1" type="number" min="0" value="0" />
+        </div>
+        <div class="col">
+          <label for="score2">Player 2 score</label>
+          <input id="score2" type="number" min="0" value="0" />
+        </div>
+        <div class="col">
+          <label for="linkedBetSelect">Linked bet (optional)</label>
+          <select id="linkedBetSelect">
+            <option value="">No bet</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <label for="gameNotes">Notes (optional)</label>
+        <textarea id="gameNotes" rows="2" placeholder="e.g., crazy comeback, best-of-3 game 2"></textarea>
+      </div>
+      <button id="addGameBtn">Log Game</button>
+
+      <table id="gamesTable">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Game</th>
+            <th>Players &amp; Score</th>
+            <th>Winner</th>
+            <th>Bet</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Bets -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Bets</h2>
+        <span class="tag">Side Action</span>
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="betDesc">Bet description</label>
+          <input id="betDesc" type="text" placeholder="e.g., Loser buys pizza" />
+        </div>
+        <div class="col">
+          <label for="betStake">Stake (optional)</label>
+          <input id="betStake" type="text" placeholder="$10, 1 drink, etc." />
+        </div>
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <div class="col">
+          <label for="bettorSelect">Who made the bet?</label>
+          <select id="bettorSelect"></select>
+        </div>
+        <div class="col">
+          <label for="betAgainstSelect">Against who?</label>
+          <select id="betAgainstSelect"></select>
+        </div>
+        <div class="col">
+          <label for="betStatus">Status</label>
+          <select id="betStatus">
+            <option value="open">Open</option>
+            <option value="settled">Settled</option>
+          </select>
+        </div>
+      </div>
+      <button id="addBetBtn" style="margin-bottom: 8px;">Add Bet</button>
+
+      <table id="betsTable">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Description</th>
+            <th>Players</th>
+            <th>Stake</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Stats</h2>
+        <span class="tag">Win–Loss</span>
+      </div>
+      <div id="statsContainer" class="stat-grid"></div>
+      <p class="small-text">
+        Stats are based on logged games. Ties don't count as wins or losses.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    // --- Storage helpers ---
+    const STORAGE_KEY = "squadTracker_v1";
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return { players: [], games: [], bets: [] };
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          players: parsed.players || [],
+          games: parsed.games || [],
+          bets: parsed.bets || []
+        };
+      } catch {
+        return { players: [], games: [], bets: [] };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // --- Global state ---
+    let state = loadState();
+
+    // --- Utility functions ---
+    function createId() {
+      return Date.now().toString(36) + Math.random().toString(16).slice(2);
+    }
+
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString();
+    }
+
+    function getPlayerById(id) {
+      return state.players.find(p => p.id === id) || null;
+    }
+
+    // --- DOM refs ---
+    const playerNameInput = document.getElementById("playerName");
+    const addPlayerBtn = document.getElementById("addPlayerBtn");
+    const playerListEl = document.getElementById("playerList");
+
+    const gameTypeSelect = document.getElementById("gameType");
+    const player1Select = document.getElementById("player1Select");
+    const player2Select = document.getElementById("player2Select");
+    const score1Input = document.getElementById("score1");
+    const score2Input = document.getElementById("score2");
+    const linkedBetSelect = document.getElementById("linkedBetSelect");
+    const gameNotesInput = document.getElementById("gameNotes");
+    const addGameBtn = document.getElementById("addGameBtn");
+    const gamesTableBody = document.querySelector("#gamesTable tbody");
+
+    const betDescInput = document.getElementById("betDesc");
+    const betStakeInput = document.getElementById("betStake");
+    const bettorSelect = document.getElementById("bettorSelect");
+    const betAgainstSelect = document.getElementById("betAgainstSelect");
+    const betStatusSelect = document.getElementById("betStatus");
+    const addBetBtn = document.getElementById("addBetBtn");
+    const betsTableBody = document.querySelector("#betsTable tbody");
+
+    const statsContainer = document.getElementById("statsContainer");
+
+    // --- Render functions ---
+    function renderPlayers() {
+      // Pills
+      playerListEl.innerHTML = "";
+      state.players.forEach(player => {
+        const pill = document.createElement("div");
+        pill.className = "pill";
+        const span = document.createElement("span");
+        span.textContent = player.name;
+        const small = document.createElement("small");
+        const stats = calculatePlayerStats(player.id);
+        small.textContent = `W ${stats.totalWins} / L ${stats.totalLosses}`;
+        const del = document.createElement("span");
+        del.textContent = "×";
+        del.className = "delete";
+        del.title = "Remove friend (does not delete old games/bets)";
+        del.addEventListener("click", () => {
+          if (confirm(`Remove ${player.name} from active friends?`)) {
+            state.players = state.players.filter(p => p.id !== player.id);
+            saveState();
+            fullRender();
+          }
+        });
+        pill.appendChild(span);
+        pill.appendChild(small);
+        pill.appendChild(del);
+        playerListEl.appendChild(pill);
+      });
+
+      // Dropdowns that use players
+      function fillSelect(selectElement, includeEmpty) {
+        const current = selectElement.value;
+        selectElement.innerHTML = "";
+        if (includeEmpty) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "—";
+          selectElement.appendChild(opt);
+        }
+        state.players.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name;
+          selectElement.appendChild(opt);
+        });
+        if (current) {
+          selectElement.value = current;
+        }
+      }
+
+      fillSelect(player1Select, false);
+      fillSelect(player2Select, false);
+      fillSelect(bettorSelect, true);
+      fillSelect(betAgainstSelect, true);
+    }
+
+    function renderBets() {
+      betsTableBody.innerHTML = "";
+
+      state.bets
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .forEach(bet => {
+          const tr = document.createElement("tr");
+
+          const tdWhen = document.createElement("td");
+          tdWhen.textContent = formatDate(bet.createdAt);
+          tr.appendChild(tdWhen);
+
+          const tdDesc = document.createElement("td");
+          tdDesc.textContent = bet.desc || "(No description)";
+          tr.appendChild(tdDesc);
+
+          const bettor = getPlayerById(bet.bettorId);
+          const against = getPlayerById(bet.againstId);
+          const tdPlayers = document.createElement("td");
+          tdPlayers.textContent = `${bettor ? bettor.name : "?"} vs ${against ? against.name : "?"}`;
+          tr.appendChild(tdPlayers);
+
+          const tdStake = document.createElement("td");
+          tdStake.textContent = bet.stake || "—";
+          tr.appendChild(tdStake);
+
+          const tdStatus = document.createElement("td");
+          const statusSpan = document.createElement("span");
+          statusSpan.className = "badge " + (bet.status === "open" ? "badge-open" : "badge-settled");
+          statusSpan.textContent = bet.status === "open" ? "Open" : "Settled";
+          tdStatus.appendChild(statusSpan);
+          tr.appendChild(tdStatus);
+
+          betsTableBody.appendChild(tr);
+        });
+
+      // Fill linked bet select (only open bets)
+      const current = linkedBetSelect.value;
+      linkedBetSelect.innerHTML = "";
+      const noBet = document.createElement("option");
+      noBet.value = "";
+      noBet.textContent = "No bet";
+      linkedBetSelect.appendChild(noBet);
+
+      state.bets
+        .filter(b => b.status === "open")
+        .forEach(b => {
+          const opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.desc ? b.desc.slice(0, 40) : `Bet ${b.id.slice(-4)}`;
+          linkedBetSelect.appendChild(opt);
+        });
+
+      if (current) {
+        linkedBetSelect.value = current;
+      }
+    }
+
+    function renderGames() {
+      gamesTableBody.innerHTML = "";
+
+      state.games
+        .slice()
+        .sort((a, b) => b.playedAt - a.playedAt)
+        .forEach(game => {
+          const tr = document.createElement("tr");
+
+          const tdWhen = document.createElement("td");
+          tdWhen.textContent = formatDate(game.playedAt);
+          tr.appendChild(tdWhen);
+
+          const tdGame = document.createElement("td");
+          const span = document.createElement("span");
+          span.className = "badge " + (game.type === "pool" ? "badge-pool" : "badge-tt");
+          span.textContent = game.type === "pool" ? "Pool" : "Ping Pong";
+          tdGame.appendChild(span);
+          if (game.notes) {
+            const noteP = document.createElement("div");
+            noteP.className = "small-text";
+            noteP.textContent = game.notes;
+            tdGame.appendChild(noteP);
+          }
+          tr.appendChild(tdGame);
+
+          const p1 = getPlayerById(game.player1Id);
+          const p2 = getPlayerById(game.player2Id);
+          const tdPlayers = document.createElement("td");
+          tdPlayers.textContent = `${p1 ? p1.name : "?"} (${game.score1}) vs ${p2 ? p2.name : "?"} (${game.score2})`;
+          tr.appendChild(tdPlayers);
+
+          const tdWinner = document.createElement("td");
+          if (game.winnerId) {
+            const winner = getPlayerById(game.winnerId);
+            tdWinner.textContent = winner ? winner.name : "?";
+          } else {
+            tdWinner.textContent = "Tie";
+          }
+          tr.appendChild(tdWinner);
+
+          const tdBet = document.createElement("td");
+          if (game.linkedBetId) {
+            const bet = state.bets.find(b => b.id === game.linkedBetId);
+            tdBet.textContent = bet ? (bet.desc || "(Linked bet)") : "(Unknown bet)";
+          } else {
+            tdBet.textContent = "—";
+          }
+          tr.appendChild(tdBet);
+
+          gamesTableBody.appendChild(tr);
+        });
+    }
+
+    function calculatePlayerStats(playerId) {
+      const games = state.games.filter(
+        g => g.player1Id === playerId || g.player2Id === playerId
+      );
+      let totalWins = 0;
+      let totalLosses = 0;
+      let poolWins = 0;
+      let poolLosses = 0;
+      let ttWins = 0;
+      let ttLosses = 0;
+
+      games.forEach(g => {
+        if (!g.winnerId) return; // tie
+        if (g.winnerId === playerId) {
+          totalWins++;
+          if (g.type === "pool") poolWins++;
+          else if (g.type === "pingpong") ttWins++;
+        } else {
+          totalLosses++;
+          if (g.type === "pool") poolLosses++;
+          else if (g.type === "pingpong") ttLosses++;
+        }
+      });
+
+      return {
+        totalWins,
+        totalLosses,
+        poolWins,
+        poolLosses,
+        ttWins,
+        ttLosses
+      };
+    }
+
+    function renderStats() {
+      statsContainer.innerHTML = "";
+      state.players.forEach(player => {
+        const stats = calculatePlayerStats(player.id);
+        const gamesPlayed = stats.totalWins + stats.totalLosses;
+        const card = document.createElement("div");
+        card.className = "stat-card";
+
+        const name = document.createElement("div");
+        name.className = "stat-name";
+        name.textContent = player.name;
+        card.appendChild(name);
+
+        const line1 = document.createElement("div");
+        line1.className = "stat-line";
+        line1.textContent = `Overall: W ${stats.totalWins} / L ${stats.totalLosses} (${gamesPlayed} games)`;
+        card.appendChild(line1);
+
+        const line2 = document.createElement("div");
+        line2.className = "stat-line";
+        line2.textContent = `Pool: W ${stats.poolWins} / L ${stats.poolLosses}`;
+        card.appendChild(line2);
+
+        const line3 = document.createElement("div");
+        line3.className = "stat-line";
+        line3.textContent = `Ping Pong: W ${stats.ttWins} / L ${stats.ttLosses}`;
+        card.appendChild(line3);
+
+        statsContainer.appendChild(card);
+      });
+    }
+
+    function fullRender() {
+      renderPlayers();
+      renderBets();
+      renderGames();
+      renderStats();
+    }
+
+    // --- Event handlers ---
+    addPlayerBtn.addEventListener("click", () => {
+      const name = playerNameInput.value.trim();
+      if (!name) return;
+      state.players.push({ id: createId(), name });
+      playerNameInput.value = "";
+      saveState();
+      fullRender();
+    });
+
+    playerNameInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") addPlayerBtn.click();
+    });
+
+    addGameBtn.addEventListener("click", () => {
+      const p1Id = player1Select.value;
+      const p2Id = player2Select.value;
+      const s1 = parseInt(score1Input.value, 10);
+      const s2 = parseInt(score2Input.value, 10);
+
+      if (!p1Id || !p2Id || p1Id === p2Id) {
+        alert("Pick two different players.");
+        return;
+      }
+      if (Number.isNaN(s1) || Number.isNaN(s2)) {
+        alert("Enter valid scores for both players.");
+        return;
+      }
+
+      let winnerId = null;
+      if (s1 > s2) winnerId = p1Id;
+      else if (s2 > s1) winnerId = p2Id;
+
+      const game = {
+        id: createId(),
+        type: gameTypeSelect.value, // "pool" or "pingpong"
+        player1Id: p1Id,
+        player2Id: p2Id,
+        score1: s1,
+        score2: s2,
+        winnerId,
+        linkedBetId: linkedBetSelect.value || null,
+        notes: gameNotesInput.value.trim(),
+        playedAt: Date.now()
+      };
+
+      state.games.push(game);
+      score1Input.value = "0";
+      score2Input.value = "0";
+      gameNotesInput.value = "";
+      saveState();
+      fullRender();
+    });
+
+    addBetBtn.addEventListener("click", () => {
+      const desc = betDescInput.value.trim();
+      const stake = betStakeInput.value.trim();
+      const bettorId = bettorSelect.value || null;
+      const againstId = betAgainstSelect.value || null;
+      const status = betStatusSelect.value;
+
+      if (!desc && !stake) {
+        alert("At least fill in a description or a stake for the bet.");
+        return;
+      }
+      if (!bettorId || !againstId || bettorId === againstId) {
+        alert("Select two different players for the bet.");
+        return;
+      }
+
+      const bet = {
+        id: createId(),
+        desc,
+        stake,
+        bettorId,
+        againstId,
+        status,
+        createdAt: Date.now()
+      };
+      state.bets.push(bet);
+      betDescInput.value = "";
+      betStakeInput.value = "";
+      saveState();
+      fullRender();
+    });
+
+    // --- Init ---
+    document.addEventListener("DOMContentLoaded", () => {
+      fullRender();
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Place Your Bets</title>
+
+<style>
+/* ---------------- HEADER + BASE STYLES ---------------- */
+body {
+  margin: 0;
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background: #222;
+  padding: 14px;
+  text-align: center;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px 28px 32px;
+  border-radius: 10px;
+}
+
+/* ---------------- TICKER ---------------- */
+.ticker-label-wrapper {
+  background: #222;
+  padding: 10px 16px 6px;
+}
+
+.ticker-label-green {
+  background: #22c55e;
+  color: #053b10;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.ticker-wrapper {
+  background: #111;
+  color: #fff;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 2px solid #22c55e;
+  border-bottom: 2px solid #22c55e;
+  padding: 4px 0;
+  border-radius: 6px;
+  margin-bottom: 22px;
+}
+
+.ticker {
+  display: inline-block;
+  padding: 4px 0;
+}
+
+.ticker-content {
+  display: inline-block;
+  padding-left: 150px;
+  animation: marquee 5s linear infinite;
+  font-size: 0.92rem;
+  color: #e7e7e7;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ---------------- FORMS ---------------- */
+label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+textarea { min-height: 44px; resize: vertical; }
+
+button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.primary { background: #007bff; color: white; }
+.secondary { background: #6c757d; color: white; margin-right: 6px; }
+.danger { background: #dc3545; color: white; }
+
+/* Link-style button for player names */
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
+  font: inherit;
+}
+
+/* ---------------- TABLES ---------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+th, td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+}
+
+th {
+  background: #f1f1f1;
+  font-weight: bold;
+}
+
+.actions button { margin-right: 4px; }
+
+/* ---------------- PROGRESS TABLE ---------------- */
+#progressTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;   /* forces equal-width columns */
+}
+
+.progress-section {
+  margin-top: 36px;
+}
+
+.net-positive { color: green; font-weight: bold; }
+.net-negative { color: red; font-weight: bold; }
+
+/* Center numeric columns, keep player name left */
+#progressTable th,
+#progressTable td {
+  text-align: center;
+}
+
+#progressTable th:first-child,
+#progressTable td:first-child {
+  text-align: left;
+}
+
+/* ---------------- PLAYER HISTORY TABLE ---------------- */
+.history-section {
+  margin-top: 32px;
+}
+
+#historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* nice lined-up columns */
+}
+
+#historyTable th,
+#historyTable td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+#historyTable th {
+  background: #f1f1f1;
+}
+
+/* Make sortable headers look clickable */
+#historyTable th.sortable {
+  cursor: pointer;
+}
+
+#historyTable th.sortable::after {
+  content: " ⇅";
+  font-size: 0.75rem;
+  color: #888;
+}
+</style>
+</head>
+
+<body>
+
+<header>Place Your Bets</header>
+
+<!-- GREEN LABEL ABOVE TICKER -->
+<div class="ticker-label-wrapper">
+  <span class="ticker-label-green">AustinData4 Weekly NFL Predictor</span>
+</div>
+
+<!-- TICKER BAR -->
+<div class="ticker-wrapper">
+  <div class="ticker">
+    <span id="tickerContent" class="ticker-content">Loading odds…</span>
+  </div>
+</div>
+
+<div class="container">
+
+<h2>Track Bets & Game Scores</h2>
+
+<form id="gameForm">
+  <label>Player 1</label>
+  <input type="text" id="player1" required>
+
+  <label>Player 2</label>
+  <input type="text" id="player2" required>
+
+  <label>Game Type</label>
+  <select id="gameType" required>
+    <option value="">Select a game</option>
+    <option>Ping Pong</option>
+    <option>Pool</option>
+    <option>Football Bet</option>
+    <option>Hockey Bet</option>
+    <option>Tennis</option>
+    <option>Pickleball</option>
+    <option>Golf</option>
+    <option>Miscellaneous Bet</option>
+  </select>
+
+  <label>Date</label>
+  <input type="date" id="date">
+
+  <label>Stakes / Money</label>
+  <input type="text" id="stakes" placeholder="$20, 10 bucks, etc.">
+
+  <label>Score / Result</label>
+  <input type="text" id="score">
+
+  <label>Notes</label>
+  <textarea id="notes"></textarea>
+
+  <button type="submit" class="primary" id="submitBtn">Add Game</button>
+  <button type="button" class="secondary" id="cancelEditBtn" style="display:none;">Cancel Edit</button>
+</form>
+
+<h3>Past Games & Bets</h3>
+<table id="gamesTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Player 1</th>
+      <th>Player 2</th>
+      <th>Stakes</th>
+      <th>Score</th>
+      <th>Status</th>
+      <th>Notes</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="gamesBody"></tbody>
+</table>
+
+<!-- PROGRESS SECTION -->
+<div class="progress-section">
+<h3>Player Progress Summary</h3>
+<p class="helper-text">Only resolved bets count toward totals.</p>
+
+<table id="progressTable">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Net Money</th>
+    </tr>
+  </thead>
+  <tbody id="progressBody"></tbody>
+</table>
+
+<p id="noProgress" class="helper-text">No resolved bets yet.</p>
+</div>
+
+<!-- PLAYER BET HISTORY SECTION -->
+<div id="historySection" class="history-section" style="display:none;">
+  <h3 id="historyTitle">Bet History</h3>
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th class="sortable" data-sort="type">Type</th>
+        <th class="sortable" data-sort="opponent">Opponent</th>
+        <th class="sortable" data-sort="stake">Stakes</th>
+        <th class="sortable" data-sort="score">Score</th>
+        <th class="sortable" data-sort="winner">Winner</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+/* --------------------------------------------- */
+/* LOCAL STORAGE                                 */
+/* --------------------------------------------- */
+const STORAGE_KEY = "betskiGamesV3";
+let games = [];
+let editingIndex = null;
+const PASSWORD = "Betski$";
+
+/* For history/sorting state */
+let currentHistoryPlayer = null;
+let historySortCol = null;
+let historySortAsc = true;
+
+function loadGames() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  games = data ? JSON.parse(data) : [];
+  renderGames();
+}
+
+function saveGames() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+}
+
+/* --------------------------------------------- */
+/* NFL TICKER (LOCAL JSON SOURCE)                */
+/* --------------------------------------------- */
+async function initTicker() {
+  try {
+    const response = await fetch("odds.json");
+    const data = await response.json();
+
+    if (data.odds && data.odds.length > 0) {
+      document.getElementById("tickerContent").textContent =
+        data.odds.join("   •   ");
+      return;
+    }
+  } catch (err) {
+    console.log("Odds load failed, using fallback.");
+  }
+
+  const fallbackOdds = [
+    "BUF @ KC: KC -3.5 | O/U 48.5",
+    "DAL @ PHI: PHI -2.5",
+    "MIN @ DET: DET -1.5",
+    "GB @ CHI: GB -1.0"
+  ];
+
+  document.getElementById("tickerContent").textContent =
+    fallbackOdds.join("   •   ");
+}
+
+/* --------------------------------------------- */
+/* PASSWORD CHECK                                 */
+/* --------------------------------------------- */
+function askPass() {
+  const p = prompt("Enter password:");
+  return p === PASSWORD;
+}
+
+/* --------------------------------------------- */
+/* RENDER TABLE                                   */
+/* --------------------------------------------- */
+function renderGames() {
+  const tb = document.getElementById("gamesBody");
+  tb.innerHTML = "";
+
+  games.forEach((g, i) => {
+    // Hide resolved bets from the Past Games table
+    if (g.status === "Resolved") return;
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${g.date || ""}</td>
+      <td>${g.gameType || ""}</td>
+      <td>${g.player1 || ""}</td>
+      <td>${g.player2 || ""}</td>
+      <td>${g.stakes || ""}</td>
+      <td>${g.score || ""}</td>
+      <td>${g.status || "In Progress"}</td>
+      <td>${g.notes || ""}</td>
+      <td class="actions">
+        <button class="secondary" onclick="resolveBet(${i})">Resolve</button>
+        <button class="secondary" onclick="editBet(${i})">Edit</button>
+        <button class="danger" onclick="deleteBet(${i})">Delete</button>
+      </td>
+    `;
+
+    tb.appendChild(row);
+  });
+
+  updateProgress();
+  renderPlayerHistory(); // keep history view in sync if it's open
+}
+
+/* --------------------------------------------- */
+/* EDIT                                           */
+/* --------------------------------------------- */
+function editBet(i) {
+  if (!askPass()) return;
+
+  const g = games[i];
+  editingIndex = i;
+
+  player1.value = g.player1;
+  player2.value = g.player2;
+  gameType.value = g.gameType;
+  date.value = g.date;
+  stakes.value = g.stakes;
+  score.value = g.score;
+  notes.value = g.notes;
+
+  submitBtn.textContent = "Update Game";
+  cancelEditBtn.style.display = "inline-block";
+}
+
+/* --------------------------------------------- */
+/* DELETE                                         */
+/* --------------------------------------------- */
+function deleteBet(i) {
+  if (!askPass()) return;
+  if (!confirm("Delete this game?")) return;
+
+  games.splice(i, 1);
+  saveGames();
+  renderGames();
+}
+
+/* --------------------------------------------- */
+/* RESOLVE (PER-BET)                              */
+/* --------------------------------------------- */
+function parseAmount(s) {
+  if (!s) return 0;
+  const m = s.match(/([0-9]+(\.[0-9]+)?)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+function resolveBet(index) {
+  if (!askPass()) return;
+
+  const game = games[index];
+
+  // If no score/result yet, prompt the user to enter one
+  if (!game.score || !game.score.trim()) {
+    const label = `${game.date || ""}  ${game.gameType || ""} (${game.player1 || "Player 1"} vs ${game.player2 || "Player 2"})`;
+    const enteredScore = prompt(
+      `Enter the final score/result for:\n${label}`,
+      ""
+    );
+    if (enteredScore === null || enteredScore.trim() === "") {
+      // user cancelled or left blank – don't resolve
+      return;
+    }
+    game.score = enteredScore.trim();
+  }
+
+  // Ask who won the bet
+  const choice = prompt(
+    `Who won this bet?\n1 = ${game.player1}\n2 = ${game.player2}`,
+    "1"
+  );
+
+  if (choice !== "1" && choice !== "2") {
+    alert("Bet not resolved – you must enter 1 or 2.");
+    return;
+  }
+
+  const winner = choice === "1" ? game.player1 : game.player2;
+  game.winner = winner;
+
+  // Money at stake for progress table
+  game.amount = parseAmount(game.stakes);
+  game.status = "Resolved";
+
+  saveGames();
+  renderGames();
+}
+
+/* --------------------------------------------- */
+/* PROGRESS TABLE                                 */
+/* --------------------------------------------- */
+function updateProgress() {
+  const pb = document.getElementById("progressBody");
+  const empty = document.getElementById("noProgress");
+
+  const stats = {};
+
+  games.forEach(g => {
+    if (g.status !== "Resolved") return;
+
+    const p1 = g.player1;
+    const p2 = g.player2;
+    if (!p1 || !p2) return;
+
+    // Use stored amount if present, otherwise parse from stakes
+    const amt = (g.amount != null ? g.amount : parseAmount(g.stakes));
+    const winner = g.winner;
+    if (!winner) return;
+
+    if (!stats[p1]) stats[p1] = { wins: 0, losses: 0, net: 0 };
+    if (!stats[p2]) stats[p2] = { wins: 0, losses: 0, net: 0 };
+
+    const loser = winner === p1 ? p2 : p1;
+
+    stats[winner].wins++;
+    stats[winner].net += amt;
+
+    stats[loser].losses++;
+    stats[loser].net -= amt;
+  });
+
+  pb.innerHTML = "";
+
+  const players = Object.keys(stats);
+
+  if (players.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+
+  players.forEach(name => {
+    const s = stats[name];
+
+    const row = document.createElement("tr");
+
+    // Player name cell with clickable link that opens in new tab
+    const nameCell = document.createElement("td");
+    const link = document.createElement("a");
+    link.href = "player.html?name=" + encodeURIComponent(name);
+    // link.target = "_blank";  // <--- THIS makes it a new tab
+    link.textContent = name;
+    link.style.cursor = "pointer";
+    nameCell.appendChild(link);
+    row.appendChild(nameCell);
+
+
+    // Wins
+    const winsCell = document.createElement("td");
+    winsCell.textContent = s.wins;
+    row.appendChild(winsCell);
+
+    // Losses
+    const lossesCell = document.createElement("td");
+    lossesCell.textContent = s.losses;
+    row.appendChild(lossesCell);
+
+    // Net
+    const netCell = document.createElement("td");
+    netCell.textContent = "$" + s.net.toFixed(2);
+    netCell.className = s.net >= 0 ? "net-positive" : "net-negative";
+    row.appendChild(netCell);
+
+    pb.appendChild(row);
+  });
+}
+
+/* --------------------------------------------- */
+/* PLAYER HISTORY VIEW                            */
+/* --------------------------------------------- */
+function getPlayerGames(playerName) {
+  return games.filter(g => g.player1 === playerName || g.player2 === playerName);
+}
+
+function showPlayerHistory(playerName) {
+  currentHistoryPlayer = playerName;
+  const section = document.getElementById("historySection");
+  const title = document.getElementById("historyTitle");
+
+  title.textContent = "Bet History for " + playerName;
+  section.style.display = "block";
+
+  renderPlayerHistory();
+}
+
+function renderPlayerHistory() {
+  if (!currentHistoryPlayer) return;
+
+  const body = document.getElementById("historyBody");
+  body.innerHTML = "";
+
+  let list = getPlayerGames(currentHistoryPlayer);
+
+  if (historySortCol) {
+    list.sort((a, b) => compareHistory(a, b, historySortCol, historySortAsc));
+  }
+
+  list.forEach(g => {
+    const opponent = (g.player1 === currentHistoryPlayer ? g.player2 : g.player1) || "";
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${g.date || ""}</td>
+      <td>${g.gameType || ""}</td>
+      <td>${opponent}</td>
+      <td>${g.stakes || ""}</td>
+      <td>${g.score || ""}</td>
+      <td>${g.winner || ""}</td>
+      <td>${g.status || ""}</td>
+      <td>${g.notes || ""}</td>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function compareHistory(a, b, col, asc) {
+  let va, vb;
+
+  switch (col) {
+    case "type":
+      va = a.gameType || "";
+      vb = b.gameType || "";
+      break;
+    case "opponent":
+      va = (a.player1 === currentHistoryPlayer ? a.player2 : a.player1) || "";
+      vb = (b.player1 === currentHistoryPlayer ? b.player2 : b.player1) || "";
+      break;
+    case "stake":
+      va = (a.amount != null ? a.amount : parseAmount(a.stakes));
+      vb = (b.amount != null ? b.amount : parseAmount(b.stakes));
+      break;
+    case "score":
+      va = a.score || "";
+      vb = b.score || "";
+      break;
+    case "winner":
+      va = a.winner || "";
+      vb = b.winner || "";
+      break;
+    default:
+      va = "";
+      vb = "";
+  }
+
+  if (typeof va === "string") {
+    va = va.toLowerCase();
+    vb = vb.toLowerCase();
+  }
+
+  let cmp = 0;
+  if (va < vb) cmp = -1;
+  else if (va > vb) cmp = 1;
+
+  return asc ? cmp : -cmp;
+}
+
+/* Set up header click sorting for history table */
+document.addEventListener("DOMContentLoaded", () => {
+  const sortableHeaders = document.querySelectorAll("#historyTable th.sortable");
+  sortableHeaders.forEach(th => {
+    th.addEventListener("click", () => {
+      const col = th.getAttribute("data-sort");
+      if (!col) return;
+
+      if (historySortCol === col) {
+        historySortAsc = !historySortAsc;
+      } else {
+        historySortCol = col;
+        historySortAsc = true;
+      }
+      renderPlayerHistory();
+    });
+  });
+});
+
+/* --------------------------------------------- */
+/* FORM SUBMIT                                    */
+/* --------------------------------------------- */
+gameForm.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const game = {
+    player1: player1.value,
+    player2: player2.value,
+    gameType: gameType.value,
+    date: date.value,
+    stakes: stakes.value,
+    score: score.value,
+    notes: notes.value,
+    status: "In Progress",
+    winner: null,
+    amount: null
+  };
+
+  if (editingIndex === null) {
+    games.push(game);
+  } else {
+    const existing = games[editingIndex];
+    game.status = existing.status;
+    game.winner = existing.winner;
+    game.amount = existing.amount;
+    games[editingIndex] = game;
+    editingIndex = null;
+  }
+
+  saveGames();
+  renderGames();
+
+  gameForm.reset();
+  submitBtn.textContent = "Add Game";
+  cancelEditBtn.style.display = "none";
+});
+
+cancelEditBtn.addEventListener("click", () => {
+  editingIndex = null;
+  gameForm.reset();
+  submitBtn.textContent = "Add Game";
+  cancelEditBtn.style.display = "none";
+});
+
+/* --------------------------------------------- */
+/* INIT                                           */
+/* --------------------------------------------- */
+loadGames();
+initTicker();
+</script>
+
+</body>
+</html>
